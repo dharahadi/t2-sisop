@@ -12,7 +12,25 @@ import mmu.TabelaPaginas;
 
 public class SimuladorMemoria {
   public static void main(String[] args) throws Exception {
-    Configuracao config = Configuracao.configuracaoPadrao();
+    Configuracao config;
+    
+    // Tenta carregar configuração de argumentos ou arquivo
+    if (args.length > 0) {
+      if (args.length == 1 && args[0].endsWith(".properties")) {
+        // Arquivo de configuração
+        config = Configuracao.deArquivo(args[0]);
+      } else if (args.length >= 8) {
+        // Argumentos da linha de comando
+        config = Configuracao.deArgumentos(args);
+      } else {
+        System.err.println("Uso: java SimuladorMemoria [config.properties]");
+        System.err.println("   ou: java SimuladorMemoria <bitsVirtual> <bitsFisico> <bitsPagina> <bitsTLB> <niveis> <bitsText> <bitsData> <bitsStack> [arquivoEntrada] [arquivoSaida]");
+        config = Configuracao.configuracaoPadrao();
+      }
+    } else {
+      config = Configuracao.configuracaoPadrao();
+    }
+
     LayoutSegmentos layout = new LayoutSegmentos(config);
     TLB tlb = new TLB(config.getEntradasTLB());
     TabelaPaginas tabela = new TabelaPaginas(config);
@@ -42,7 +60,7 @@ public class SimuladorMemoria {
         TipoSegmento segmento = layout.getSegmento(enderecoVirtual);
 
         boolean tlbHit = false;
-        int moldura = tlb.lookup(paginaVirtual);
+        int moldura = tlb.lookup(paginaVirtual, instante);
 
         if (moldura != -1) {
           tlbHit = true;
@@ -54,13 +72,17 @@ public class SimuladorMemoria {
 
             int paginaAntiga = tabela.encontraPaginaPorMoldura(molduraSelecionada);
             if (paginaAntiga != -1) {
+              // Desmapeia página antiga e invalida entrada na TLB
               tabela.desmapeiaPagina(paginaAntiga);
+              tlb.invalidaEntrada(paginaAntiga);
             }
 
             tabela.mapeiaPagina(paginaVirtual, molduraSelecionada);
             moldura = molduraSelecionada;
 
-            memoria.setaConteudo(moldura, paginaVirtual, instante);
+            // Armazena endereço virtual completo (início da página)
+            long enderecoInicioPagina = (long) paginaVirtual << bitsDeslocamento;
+            memoria.setaConteudo(moldura, enderecoInicioPagina, instante);
           } else {
             memoria.atualizaAcesso(moldura, instante);
           }
@@ -81,7 +103,7 @@ public class SimuladorMemoria {
 
       out.println();
       out.println("=== MEMORIA FISICA (MOLDURAS) ===");
-      int[] conteudo = memoria.getConteudoMolduras();
+      long[] conteudo = memoria.getConteudoMolduras();
       for (int i = 0; i < conteudo.length; i++) {
         out.printf("FRAME=%d CONTENT=%d%n", i, conteudo[i]);
       }

@@ -1,11 +1,11 @@
 package memory;
 
 public class MemoriaFisica {
-  private final int[] conteudoMolduras;
+  private final long[] conteudoMolduras; // Armazena endereço virtual completo (ou -1 se livre)
   private final long[] instanteUltimoAcesso;
 
   public MemoriaFisica(int numeroMolduras) {
-    this.conteudoMolduras = new int[numeroMolduras];
+    this.conteudoMolduras = new long[numeroMolduras];
     this.instanteUltimoAcesso = new long[numeroMolduras];
 
     for (int i = 0; i < numeroMolduras; i++) {
@@ -14,7 +14,7 @@ public class MemoriaFisica {
     }
   }
 
-  public int[] getConteudoMolduras() {
+  public long[] getConteudoMolduras() {
     return conteudoMolduras;
   }
 
@@ -22,8 +22,8 @@ public class MemoriaFisica {
     instanteUltimoAcesso[moldura] = instante;
   }
 
-  public void setaConteudo(int moldura, int valor, long instante) {
-    conteudoMolduras[moldura] = valor;
+  public void setaConteudo(int moldura, long enderecoVirtual, long instante) {
+    conteudoMolduras[moldura] = enderecoVirtual;
     instanteUltimoAcesso[moldura] = instante;
   }
 

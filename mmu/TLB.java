@@ -10,9 +10,11 @@ public class TLB {
     }
   }
 
-  public int lookup(int paginaVirtual) {
+  public int lookup(int paginaVirtual, long instanteAtual) {
     for (EntradaTLB e : entradas) {
       if (e.isValida() && e.getPaginaVirtual() == paginaVirtual) {
+        // Atualiza instante para comportamento LRU correto
+        e.setInstanteInsercao(instanteAtual);
         return e.getMoldura();
       }
     }
@@ -51,6 +53,16 @@ public class TLB {
     maisAntiga.setMoldura(moldura);
     maisAntiga.setInstanteInsercao(instanteAtual);
     maisAntiga.setValida(true);
+  }
+
+  public void invalidaEntrada(int paginaVirtual) {
+    for (EntradaTLB e : entradas) {
+      if (e.isValida() && e.getPaginaVirtual() == paginaVirtual) {
+        e.setValida(false);
+        e.setMoldura(-1);
+        return;
+      }
+    }
   }
 
   public EntradaTLB[] getEntradas() {

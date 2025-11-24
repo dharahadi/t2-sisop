@@ -58,6 +58,67 @@ public class Configuracao {
         "saida_simulador.txt");
   }
 
+  /**
+   * Cria configuração a partir de argumentos da linha de comando.
+   * Formato esperado: bitsVirtual bitsFisico bitsPagina bitsTLB niveis bitsText bitsData bitsStack [arquivoEntrada] [arquivoSaida]
+   */
+  public static Configuracao deArgumentos(String[] args) {
+    if (args.length < 8) {
+      throw new IllegalArgumentException(
+          "Uso: java SimuladorMemoria <bitsVirtual> <bitsFisico> <bitsPagina> <bitsTLB> <niveis> <bitsText> <bitsData> <bitsStack> [arquivoEntrada] [arquivoSaida]");
+    }
+
+    int bitsVirtual = Integer.parseInt(args[0]);
+    int bitsFisico = Integer.parseInt(args[1]);
+    int bitsPagina = Integer.parseInt(args[2]);
+    int bitsTLB = Integer.parseInt(args[3]);
+    int niveis = Integer.parseInt(args[4]);
+    int bitsText = Integer.parseInt(args[5]);
+    int bitsData = Integer.parseInt(args[6]);
+    int bitsStack = Integer.parseInt(args[7]);
+
+    String arquivoEntrada = args.length > 8 ? args[8] : "enderecos_entrada.txt";
+    String arquivoSaida = args.length > 9 ? args[9] : "saida_simulador.txt";
+
+    return new Configuracao(bitsVirtual, bitsFisico, bitsPagina, bitsTLB, niveis,
+        bitsText, bitsData, bitsStack, arquivoEntrada, arquivoSaida);
+  }
+
+  /**
+   * Cria configuração a partir de um arquivo de configuração.
+   * Formato do arquivo (uma linha por parâmetro):
+   * bitsVirtual=16
+   * bitsFisico=14
+   * bitsPagina=12
+   * bitsTLB=3
+   * niveis=1
+   * bitsText=12
+   * bitsData=12
+   * bitsStack=12
+   * arquivoEntrada=enderecos_entrada.txt
+   * arquivoSaida=saida_simulador.txt
+   */
+  public static Configuracao deArquivo(String caminhoArquivo) throws java.io.IOException {
+    java.util.Properties props = new java.util.Properties();
+    try (java.io.FileReader reader = new java.io.FileReader(caminhoArquivo)) {
+      props.load(reader);
+    }
+
+    int bitsVirtual = Integer.parseInt(props.getProperty("bitsVirtual", "16"));
+    int bitsFisico = Integer.parseInt(props.getProperty("bitsFisico", "14"));
+    int bitsPagina = Integer.parseInt(props.getProperty("bitsPagina", "12"));
+    int bitsTLB = Integer.parseInt(props.getProperty("bitsTLB", "3"));
+    int niveis = Integer.parseInt(props.getProperty("niveis", "1"));
+    int bitsText = Integer.parseInt(props.getProperty("bitsText", "12"));
+    int bitsData = Integer.parseInt(props.getProperty("bitsData", "12"));
+    int bitsStack = Integer.parseInt(props.getProperty("bitsStack", "12"));
+    String arquivoEntrada = props.getProperty("arquivoEntrada", "enderecos_entrada.txt");
+    String arquivoSaida = props.getProperty("arquivoSaida", "saida_simulador.txt");
+
+    return new Configuracao(bitsVirtual, bitsFisico, bitsPagina, bitsTLB, niveis,
+        bitsText, bitsData, bitsStack, arquivoEntrada, arquivoSaida);
+  }
+
   public int getBitsEnderecoVirtual() {
     return bitsEnderecoVirtual;
   }
@@ -71,7 +132,7 @@ public class Configuracao {
   }
 
   public int getEntradasTLB() {
-    return 1 << bitsEntradasTLB;
+    return (int) (1L << bitsEntradasTLB);
   }
 
   public int getBitsEntradasTLB() {
@@ -94,6 +155,11 @@ public class Configuracao {
     return 1L << bitsTamanhoStack;
   }
 
+  /**
+   * Calcula o tamanho do segmento .bss.
+   * Conforme o enunciado: "Multiplicar o tamanho por 3".
+   * Interpretação: multiplicar a soma dos tamanhos de .text, .data e .stack por 3.
+   */
   public long getTamanhoBss() {
     return (getTamanhoText() + getTamanhoData() + getTamanhoStack()) * 3;
   }
@@ -109,17 +175,23 @@ public class Configuracao {
   // Derivados
 
   public int getTamanhoPagina() {
-    return 1 << bitsDeslocamentoPagina;
+    return (int) (1L << bitsDeslocamentoPagina);
   }
 
   public int getNumeroPaginasVirtuais() {
     int bitsPagina = bitsEnderecoVirtual - bitsDeslocamentoPagina;
-    return 1 << bitsPagina;
+    if (bitsPagina >= 31) {
+      throw new ArithmeticException("Overflow: bitsPagina muito grande para int");
+    }
+    return (int) (1L << bitsPagina);
   }
 
   public int getNumeroMoldurasFisicas() {
     int bitsMoldura = bitsEnderecoFisico - bitsDeslocamentoPagina;
-    return 1 << bitsMoldura;
+    if (bitsMoldura >= 31) {
+      throw new ArithmeticException("Overflow: bitsMoldura muito grande para int");
+    }
+    return (int) (1L << bitsMoldura);
   }
 
   public long getTamanhoEspacoEnderecoVirtual() {
