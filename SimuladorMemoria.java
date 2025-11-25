@@ -1,30 +1,27 @@
+import config.Configuracao;
+import config.LayoutSegmentos;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
-
-import config.Configuracao;
-import config.LayoutSegmentos;
 import memory.MemoriaFisica;
-import model.TipoSegmento;
 import mmu.TLB;
 import mmu.TabelaPaginas;
+import model.TipoSegmento;
 
 public class SimuladorMemoria {
   public static void main(String[] args) throws Exception {
     Configuracao config;
-    
+
     // Tenta carregar configuração de argumentos ou arquivo
     if (args.length > 0) {
       if (args.length == 1 && args[0].endsWith(".properties")) {
         // Arquivo de configuração
         config = Configuracao.deArquivo(args[0]);
-      } else if (args.length >= 8) {
-        // Argumentos da linha de comando
-        config = Configuracao.deArgumentos(args);
       } else {
         System.err.println("Uso: java SimuladorMemoria [config.properties]");
-        System.err.println("   ou: java SimuladorMemoria <bitsVirtual> <bitsFisico> <bitsPagina> <bitsTLB> <niveis> <bitsText> <bitsData> <bitsStack> [arquivoEntrada] [arquivoSaida]");
+        System.err.println(
+            "   ou: java SimuladorMemoria <bitsVirtual> <bitsFisico> <bitsPagina> <bitsTLB> <niveis> <bitsText> <bitsData> <bitsStack> [arquivoEntrada] [arquivoSaida]");
         config = Configuracao.configuracaoPadrao();
       }
     } else {

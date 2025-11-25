@@ -1,7 +1,7 @@
 package memory;
 
 public class MemoriaFisica {
-  private final long[] conteudoMolduras; // Armazena endereço virtual completo (ou -1 se livre)
+  private final long[] conteudoMolduras;
   private final long[] instanteUltimoAcesso;
 
   public MemoriaFisica(int numeroMolduras) {
