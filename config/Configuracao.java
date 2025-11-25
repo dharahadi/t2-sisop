@@ -1,5 +1,13 @@
 package config;
 
+/**
+ * Representa todos os parâmetros necessários para executar o simulador.
+ *
+ * <p>
+ * Além dos valores brutos lidos do arquivo/linha de comando, disponibiliza
+ * métodos utilitários que calculam tamanhos derivados (página, molduras,
+ * espaço virtual etc.).
+ */
 public class Configuracao {
   private final int bitsEnderecoVirtual;
   private final int bitsEnderecoFisico;
@@ -14,6 +22,21 @@ public class Configuracao {
   private final String arquivoEntrada;
   private final String arquivoSaida;
 
+  /**
+   * Cria uma configuração válida para o simulador.
+   *
+   * @param bitsEnderecoVirtual    quantidade de bits disponíveis no endereço
+   *                               virtual
+   * @param bitsEnderecoFisico     quantidade de bits no endereço físico
+   * @param bitsDeslocamentoPagina bits do deslocamento dentro da página
+   * @param bitsEntradasTLB        log2 do número de entradas da TLB
+   * @param niveisTabelaPaginas    quantidade de níveis da tabela de páginas (1-3)
+   * @param bitsTamanhoText        log2 do tamanho do segmento .text
+   * @param bitsTamanhoData        log2 do tamanho do segmento .data
+   * @param bitsTamanhoStack       log2 do tamanho do segmento .stack
+   * @param arquivoEntrada         caminho do arquivo com endereços virtuais
+   * @param arquivoSaida           caminho do arquivo de relatório gerado
+   */
   public Configuracao(int bitsEnderecoVirtual,
       int bitsEnderecoFisico,
       int bitsDeslocamentoPagina,
@@ -43,6 +66,9 @@ public class Configuracao {
     this.arquivoSaida = arquivoSaida;
   }
 
+  /**
+   * Fornece uma configuração padrão útil para testes rápidos.
+   */
   public static Configuracao configuracaoPadrao() {
     return new Configuracao(
         16, // bits do endereço virtual
@@ -71,6 +97,9 @@ public class Configuracao {
    * arquivoEntrada=enderecos_entrada.txt
    * arquivoSaida=saida_simulador.txt
    */
+  /**
+   * Lê um arquivo .properties (formato chave=valor) e instancia uma Configuracao.
+   */
   public static Configuracao deArquivo(String caminhoArquivo) throws java.io.IOException {
     java.util.Properties props = new java.util.Properties();
     try (java.io.FileReader reader = new java.io.FileReader(caminhoArquivo)) {
@@ -92,38 +121,49 @@ public class Configuracao {
         bitsText, bitsData, bitsStack, arquivoEntrada, arquivoSaida);
   }
 
+  /** @return quantidade de bits utilizada para representar endereços virtuais. */
   public int getBitsEnderecoVirtual() {
     return bitsEnderecoVirtual;
   }
 
+  /** @return quantidade de bits dos endereços físicos. */
   public int getBitsEnderecoFisico() {
     return bitsEnderecoFisico;
   }
 
+  /** @return bits reservados para o deslocamento dentro da página. */
   public int getBitsDeslocamentoPagina() {
     return bitsDeslocamentoPagina;
   }
 
+  /**
+   * @return número de entradas reais da TLB (2^bitsEntradasTLB).
+   */
   public int getEntradasTLB() {
     return (int) (1L << bitsEntradasTLB);
   }
 
+  /** @return log2 do número de entradas da TLB. */
   public int getBitsEntradasTLB() {
     return bitsEntradasTLB;
   }
 
+  /** @return total de níveis que a tabela de páginas deve possuir. */
   public int getNiveisTabelaPaginas() {
     return niveisTabelaPaginas;
   }
 
+  /** @return tamanho (em bytes) do segmento .text. */
   public long getTamanhoText() {
     return 1L << bitsTamanhoText;
   }
 
+  /** @return tamanho do segmento .data. */
   public long getTamanhoData() {
     return 1L << bitsTamanhoData;
   }
 
+  /** @return tamanho reservado para a pilha (.stack). */
   public long getTamanhoStack() {
     return 1L << bitsTamanhoStack;
   }
@@ -138,20 +178,24 @@ public class Configuracao {
     return (getTamanhoText() + getTamanhoData() + getTamanhoStack()) * 3;
   }
 
+  /** @return caminho do arquivo que contém a lista de endereços virtuais. */
   public String getArquivoEntrada() {
     return arquivoEntrada;
   }
 
+  /** @return caminho do arquivo onde o relatório será gravado. */
   public String getArquivoSaida() {
     return arquivoSaida;
   }
 
   // Derivados
 
+  /** @return tamanho da página em bytes (2^bitsDeslocamento). */
   public int getTamanhoPagina() {
     return (int) (1L << bitsDeslocamentoPagina);
   }
 
+  /** @return quantidade total de páginas virtuais possíveis. */
   public int getNumeroPaginasVirtuais() {
     int bitsPagina = bitsEnderecoVirtual - bitsDeslocamentoPagina;
     if (bitsPagina >= 31) {
@@ -160,6 +204,7 @@ public class Configuracao {
     return (int) (1L << bitsPagina);
   }
 
+  /** @return número de molduras físicas disponíveis. */
   public int getNumeroMoldurasFisicas() {
     int bitsMoldura = bitsEnderecoFisico - bitsDeslocamentoPagina;
     if (bitsMoldura >= 31) {
@@ -168,6 +213,7 @@ public class Configuracao {
     return (int) (1L << bitsMoldura);
   }
 
+  /** @return tamanho total do espaço de endereçamento virtual. */
   public long getTamanhoEspacoEnderecoVirtual() {
     return 1L << bitsEnderecoVirtual;
   }

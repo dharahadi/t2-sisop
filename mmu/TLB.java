@@ -1,8 +1,14 @@
 package mmu;
 
+/**
+ * Tradução simplificada de uma TLB associativa com política LRU.
+ */
 public class TLB {
   private final EntradaTLB[] entradas;
 
+  /**
+   * Instancia a TLB com a capacidade configurada preenchendo entradas inválidas.
+   */
   public TLB(int capacidade) {
     this.entradas = new EntradaTLB[capacidade];
     for (int i = 0; i < capacidade; i++) {
@@ -10,6 +16,11 @@ public class TLB {
     }
   }
 
+  /**
+   * Procura a VPN infromada e, em caso de hit, atualiza o instante para LRU.
+   *
+   * @return moldura traduzida ou -1 em caso de miss.
+   */
   public int lookup(int paginaVirtual, long instanteAtual) {
     for (EntradaTLB e : entradas) {
       if (e.isValida() && e.getPaginaVirtual() == paginaVirtual) {
@@ -21,6 +32,10 @@ public class TLB {
     return -1;
   }
 
+  /**
+   * Insere uma nova entrada ou atualiza a existente. Caso não haja vaga livre,
+   * substitui a entrada mais antiga (menor instante).
+   */
   public void insereOuAtualiza(int paginaVirtual, int moldura, long instanteAtual) {
     // já existe?
     for (EntradaTLB e : entradas) {
@@ -55,6 +70,7 @@ public class TLB {
     maisAntiga.setValida(true);
   }
 
+  /** Invalida a entrada referente à VPN informada (usado em substituições). */
   public void invalidaEntrada(int paginaVirtual) {
     for (EntradaTLB e : entradas) {
       if (e.isValida() && e.getPaginaVirtual() == paginaVirtual) {

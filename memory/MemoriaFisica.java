@@ -1,9 +1,14 @@
 package memory;
 
+/**
+ * Simula as molduras físicas da RAM, guardando o endereço virtual atualmente
+ * mapeado em cada uma e o instante do último acesso, para viabilizar LRU.
+ */
 public class MemoriaFisica {
   private final long[] conteudoMolduras;
   private final long[] instanteUltimoAcesso;
 
+  /** Inicializa o vetor de molduras marcando todas como livres. */
   public MemoriaFisica(int numeroMolduras) {
     this.conteudoMolduras = new long[numeroMolduras];
     this.instanteUltimoAcesso = new long[numeroMolduras];
@@ -18,15 +23,26 @@ public class MemoriaFisica {
     return conteudoMolduras;
   }
 
+  /** Atualiza somente o instante de acesso para uma moldura já ocupada. */
   public void atualizaAcesso(int moldura, long instante) {
     instanteUltimoAcesso[moldura] = instante;
   }
 
+  /**
+   * Registra o endereço virtual (início da página) que passou a ocupar a moldura.
+   */
   public void setaConteudo(int moldura, long enderecoVirtual, long instante) {
     conteudoMolduras[moldura] = enderecoVirtual;
     instanteUltimoAcesso[moldura] = instante;
   }
 
+  /**
+   * Seleciona a moldura que será usada pela próxima página.
+   *
+   * <p>
+   * Primeiramente procura espaços livres; caso não existam, escolhe a moldura
+   * com menor instante registrado (LRU).
+   */
   public int selecionaMolduraParaUso(long instanteAtual) {
     // tenta achar livre
     for (int i = 0; i < conteudoMolduras.length; i++) {

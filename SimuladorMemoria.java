@@ -9,6 +9,11 @@ import mmu.TLB;
 import mmu.TabelaPaginas;
 import model.TipoSegmento;
 
+/**
+ * Ponto de entrada do simulador. Faz a leitura das configurações, processa cada
+ * endereço virtual e gera um relatório detalhado com o comportamento da TLB,
+ * tabela de páginas e memória física.
+ */
 public class SimuladorMemoria {
   public static void main(String[] args) throws Exception {
     Configuracao config;
@@ -28,6 +33,7 @@ public class SimuladorMemoria {
       config = Configuracao.configuracaoPadrao();
     }
 
+    // Componentes principais da simulação.
     LayoutSegmentos layout = new LayoutSegmentos(config);
     TLB tlb = new TLB(config.getEntradasTLB());
     TabelaPaginas tabela = new TabelaPaginas(config);
@@ -51,6 +57,7 @@ public class SimuladorMemoria {
         long enderecoVirtual = Long.parseLong(linha);
         instante++;
 
+        // Separa VPN e deslocamento conforme a configuração.
         int paginaVirtual = (int) (enderecoVirtual >> bitsDeslocamento);
         int deslocamento = (int) (enderecoVirtual & (tamanhoPagina - 1));
 
